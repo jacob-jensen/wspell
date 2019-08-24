@@ -2,28 +2,28 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+
+	"github.com/gorilla/mux"
+	"github.com/jacob-jensen/wspell/word"
 )
 
-//Word contains a single word
-type Word struct {
-	Word        string `json:"word"`
-	Category    int    `json:"category"`
-	PicturePath string `json:"picturePath"`
+func handleWord(w http.ResponseWriter, r *http.Request) {
+	data := word.Word{Word: "SØSTJERNE", Category: 1}
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		panic(err)
+	}
+}
+
+func handleWordID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	fmt.Println("id is:", vars["id"])
 }
 
 func main() {
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		words := []Word{
-			Word{Word: "hej", Category: 1},
-			Word{Word: "med dig", Category: 2},
-		}
-		if err := json.NewEncoder(w).Encode(words); err != nil {
-			panic(err)
-		}
-	})
-
-	http.ListenAndServe(":8080", mux)
+	r := mux.NewRouter()
+	r.HandleFunc("/word", handleWord).Methods("Get")
+	r.HandleFunc("/word/{id}", handleWordID).Methods("Get")
+	http.ListenAndServe(":8080", r)
 }
